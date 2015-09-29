@@ -51,7 +51,7 @@
         	
         	#input, #output {
         		width: 100%;
-        		height: 40%;
+        		height: 33%;
         		margin: 0;
         		padding: 0;
         		color: #000;
@@ -75,6 +75,7 @@
         	// Settings
         	var url = 'https://maps.googleapis.com/maps/api/geocode/json';
         	var key = ''; // Your API key
+        	var delay = 200; // Wait between requests (ms)
         	
         	// Global
         	var counter = 0;
@@ -86,6 +87,7 @@
         		
         		// Bind action to button
     			$('#run').on('click', function(event) { execute(); });
+    			
 			});
 			
 			// Start execution
@@ -94,12 +96,18 @@
 					
 					// Get input
 					var input = $('#input').val();
-					if ($.trim(input).length===0) return alert("No input found. Enter your addresses first.");
+					if ($.trim(input).length===0) {
+						alert("No input found. Enter your addresses first.");
+						return false;
+					}
 					
 					// Split lines to array
 					lines = input.split("\n");
 					counter = lines.length;
-					if (counter===0) return alert("No input found. Enter your addresses first.");
+					if (counter===0) {
+						alert("No input found. Enter your addresses first.");
+						return false;
+					}
 					
 					// Init output
 					begin();
@@ -141,7 +149,7 @@
 					
 					// Proceed with next
 					if ( next && --counter > 0 ) {
-						setTimeout('geocode(' + ++i + ')', 100);
+						setTimeout('geocode(' + ++i + ')', delay );
 					}
 						
 					// Finalize output
@@ -239,6 +247,7 @@
         <textarea id="input"></textarea>
         <button id="run">GeoJSONcode</button><span id="status"></span>
         <textarea id="output"></textarea>
+        <p>Fork me at <a href="https://github.com/routexl/GeoJSONcoder">Github</a></p>
     </body>
     
 </html>

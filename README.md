@@ -10,6 +10,6 @@ GeoJSON is a format for encoding a variety of geographic data structures. A GeoJ
 (source: <a href="http://geojson.org/">GeoJSON.org</a>)
 
 ## GeoJSONcoder
-GeoJSONcoder is a webapp to geocode addresses and output the result in the GeoJSON format. It's great for development and testing purposes. The goal is to combine html, css and javscript in one file, which makes it easy to distribute and save on any device.
+GeoJSONcoder is a single page webapp to geocode addresses and output the result in the GeoJSON format. It's great for development and testing purposes. The goal is to combine html, css and javscript in one file, which makes it easy to distribute and save on any device.
 
 Preview the webapp: <a href="http://htmlpreview.github.io/?https://github.com/routexl/GeoJSONcoder/blob/master/GeoJSONcoder.html">Geocode addresses to GeoJSON</a>
