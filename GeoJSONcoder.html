@@ -43,7 +43,7 @@
         		height: 96%;
         		margin: 2%;
         		padding: 0;
-        		background-color: #EEE;
+        		background-color: #FFF;
         		font-family: Arial, Helvetica, sans-serif;
         		font-size: 0.8em;
         		color: #888;
@@ -55,6 +55,7 @@
         		margin: 0;
         		padding: 0;
         		color: #000;
+        		background-color: #EEF;
         	}
         	
         	#run {
@@ -88,6 +89,9 @@
         		// Bind action to button
     			$('#run').on('click', function(event) { execute(); });
     			
+    			// Focus on input
+    			$("#input").select();	
+    			
 			});
 			
 			// Start execution
@@ -96,24 +100,28 @@
 					
 					// Get input
 					var input = $('#input').val();
-					if ($.trim(input).length===0) {
-						alert("No input found. Enter your addresses first.");
-						return false;
+					
+					// Check empty input
+					if ( $.trim(input) !== "" ) {
+					
+						// Split lines to array
+						lines = input.split("\n");
+						counter = lines.length;
 					}
 					
-					// Split lines to array
-					lines = input.split("\n");
-					counter = lines.length;
+					// Check number of lines
 					if (counter===0) {
+						
 						alert("No input found. Enter your addresses first.");
-						return false;
+						
+					} else {
+					
+						// Init output
+						begin();
+						
+						// Geocode starter
+						geocode(0);
 					}
-					
-					// Init output
-					begin();
-					
-					// Geocode starter
-					geocode(0);
 				
 				} catch (err) {
 					var msg = err.getMessage();
