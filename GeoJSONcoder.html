@@ -1,0 +1,216 @@
+<!DOCTYPE html><html>
+    <head>
+        <title>GeoJSONcoder</title>
+        <style>
+        
+        	html {
+        		width: 100%;
+        		height: 100%;
+        		margin: 0;
+        		padding: 0;
+        	}
+        
+        	body {
+        		width: 96%;
+        		height: 96%;
+        		margin: 2%;
+        		padding: 0;
+        		background-color: #EEE;
+        		font-family: Arial, Helvetica, sans-serif;
+        		font-size: 0.8em;
+        		color: #888;
+        	}
+        	
+        	#input, #output {
+        		width: 100%;
+        		height: 40%;
+        		margin: 0;
+        		padding: 0;
+        		color: #000;
+        	}
+        	
+        	#run {
+        		margin: 1em 0;
+        		padding: 0.5em 1em;
+        		font-weight: bold;
+        	}
+
+        	#status {
+        		float: right;
+        		margin: 2em 0;
+        	}
+        	
+        </style>
+        <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+        <script>
+        
+        	// Settings
+        	var url = 'https://maps.googleapis.com/maps/api/geocode/json';
+        	var key = ''; // Your API key
+        	
+        	// Global
+        	var counter = 0;
+        	var first = true;
+        	var lines = [];
+        	
+        	// When page loaded
+        	$( document ).ready(function() {
+        		
+        		// Bind action to button
+    			$('#run').on('click', function(event) { execute(); });
+			});
+			
+			// Start execution
+			function execute() {
+				try {
+					
+					// Get input
+					var input = $('#input').val();
+					if ($.trim(input).length===0) return alert("No input found. Enter your addresses first.");
+					
+					// Split lines to array
+					lines = input.split("\n");
+					counter = lines.length;
+					if (counter===0) return alert("No input found. Enter your addresses first.");
+					
+					// Init output
+					begin();
+					
+					// Geocode starter
+					geocode(0);
+				
+				} catch (err) {
+					var msg = err.getMessage();
+					log(msg);
+					alert(msg);
+				}
+			}
+			
+			// Geocode a line
+			function geocode(i) {
+				
+				log('Number of lines: ' + counter);
+
+				// Trim this line
+				var search = $.trim(lines[i]);
+				
+				// Skip empty lines
+				if (search==='' || search.length<4) {
+					if ( --counter > 0 ) return geocode(++i);
+					else return final();
+				}
+				
+				// Make parameters
+				var param = {};
+				param.address = search;
+				if (key) param.key = key;
+
+				// Call API
+				$.getJSON( url , param ).always( function ( data ) {
+
+					// Process the data
+					var next = process(i, search, data);
+					
+					// Proceed with next
+					if ( next && --counter > 0 ) {
+						setTimeout('geocode(' + ++i + ')', 100);
+					}
+						
+					// Finalize output
+					if (counter===0) final();
+				});
+			}
+
+			// Process result from geocoder
+			function process(i, search, data) {
+				
+				try {
+					
+					// No success, 
+					if (!data) return true;
+					
+					// Over quota, try again
+					if (data.status==="OVER_QUERY_LIMIT") {
+						log("Over query limit, wait a second.");
+						setTimout('geocode(' + i + ')', 1000);
+						return false;
+					}
+					
+					// If not OK there is nothing we can do
+					if (data.status!=="OK") {
+						log('Bad status: ' + data.status);
+						return true;
+					}
+					
+					// Use the first result
+					var r = data.results[0];
+					var lat = Math.round(r.geometry.location.lat*1E6)/1E6;
+					var lng = Math.round(r.geometry.location.lng*1E6)/1E6;
+					var address = r.formatted_address;
+					
+					// Add comma in between features
+					if (first) first = false;
+					else out(',');
+					
+					// Add this result to output
+					// Note the order of coordinates: lng, lat
+					out('{"type":"Feature",');
+					out('"id":"' + search + '",');
+					out('"geometry":{"type":"Point","coordinates": [' + lng + ',' + lat + ']},');
+ 					out('"properties":{"name":"' + search + '","address":"' + address + '"}}');
+
+				} catch(err) {};
+				
+				return true;
+			}
+
+			// Begin the output
+			function begin() {
+				
+				// Disable input textarea and button
+				$('#input').prop('disabled', true);
+				$('#run').prop('disabled', true);
+				
+				// Initial output
+				$('#output').html('{"type":"FeatureCollection","features":[');
+			}
+
+			// Finalize output
+			function final() {
+				
+				// Enable input and button
+   				$('#input').prop('disabled', false);
+   				$('#run').prop('disabled', false);
+   				
+				// Close output
+				out(']}');
+				
+				// Status
+				log("Press Ctrl-c to copy");
+
+   				// Select output
+   				$('#output').select();
+			}
+			
+			// Write to output
+			function out(string) {
+				$('#output').append(string);
+			}
+			
+			// Show status
+			function log(string) {
+				$("#status").html(string);
+			}
+
+        </script>
+    </head>
+    
+    <body>
+    	<h1>GeoJSONcoder</h1>
+    	<p>Type or paste addresses. One address per line:</p>
+        <textarea id="input"></textarea>
+        <button id="run">GeoJSONcode</button><span id="status"></span>
+        <textarea id="output"></textarea>
+    </body>
+    
+</html>
